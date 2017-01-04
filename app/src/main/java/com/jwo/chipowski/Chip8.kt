@@ -74,21 +74,19 @@ class Chip8() {
     }
 
     fun decodeAndExecuteOpcode()  = when (opcode.toInt() and 0xF000) {
-        0x0000 -> {
-            when (opcode.toInt() and 0x00ff) {
-                0x00e0 -> {
-                    // Clear screen
-                    gfx.fill(0, 0, gfx.size)
-                    pc += 2
-                }
-                0x00ee -> {
-                    // returns from subroutine
-                    pc = stack[sp] and 0x0fff
-                    --sp
-                }
-                else -> {
-                    throw UnsupportedOperationException("RCA 1802 program. Should not need this")
-                }
+        0x0000 -> when (opcode.toInt() and 0x00ff) {
+            0x00e0 -> {
+                // Clear screen
+                gfx.fill(0, 0, gfx.size)
+                pc += 2
+            }
+            0x00ee -> {
+                // returns from subroutine
+                pc = stack[sp] and 0x0fff
+                --sp
+            }
+            else -> {
+                throw UnsupportedOperationException("RCA 1802 program. Should not need this")
             }
         }
         0x1000 -> {
@@ -100,6 +98,77 @@ class Chip8() {
             stack[sp] = pc
             sp++
             pc = opcode.toInt() and 0x0fff
+        }
+        0x3000 -> {
+            val x = opcode.toInt().shr(8) and 0xf
+            val nn: Byte = (opcode.toInt() and 0x00ff).toByte()
+            pc += if (V[x] == nn) {
+                4
+            } else {
+                2
+            }
+        }
+        0x4000 -> {
+            val x = opcode.toInt().shr(8) and 0xf
+            val nn: Byte = (opcode.toInt() and 0x00ff).toByte()
+            pc += if (V[x] != nn) {
+                4
+            } else {
+                2
+            }
+        }
+        0x5000 -> {
+            val x = opcode.toInt().shr(8) and 0xf
+            val y = opcode.toInt().shr(4) and 0xf
+            pc += if (V[x] == V[y]) {
+                4
+            } else {
+                2
+            }
+        }
+        0x6000 -> {
+            val nn = opcode.toInt() and 0xff
+            val x = opcode.toInt().shr(8) and 0xf
+            V[x] = nn.toByte()
+            pc += 2
+        }
+        0x7000 -> {
+            val nn = opcode.toInt() and 0xff
+            val x = opcode.toInt().shr(8) and 0xf
+            V[x] = (V[x] + nn.toByte()).toByte()
+            pc += 2
+        }
+        0x8000 -> {
+            val x = opcode.toInt().shr(8) and 0xf
+            val y = opcode.toInt().shr(4) and 0xf
+            when (opcode.toInt() and 0xf) {
+                0x0 -> {
+                    V[x] = V[y]
+                }
+                0x1 -> {
+                    V[x] = (V[x].toInt() or V[y].toInt()).toByte()
+                }
+                0x2 -> {
+                    V[x] = (V[x].toInt() and V[y].toInt()).toByte()
+                }
+                0x3 -> {
+                    V[x] = (V[x].toInt() xor V[y].toInt()).toByte()
+                }
+                0x4 -> {
+                    val a = (V[x].toInt() and 0xff) + (V[y].toInt() and 0xff)
+                    V[0xf] = if (a and 0x100 == 0x100) 1 else 0 // carry bit
+                    V[x] = a.toByte()
+                }
+                0x5 -> {
+                    val a = (V[x].toInt() and 0xff) - (V[y].toInt() and 0xff)
+                    V[0xf] = if (a and 0x100 == 0x100) 1 else 0 // borrow bit
+                    V[x] = a.toByte()
+                }
+                else -> {
+                    throw UnsupportedOperationException("Unknown opcode $opcode")
+                }
+            }
+            pc += 2
         }
         0xA000 -> {
             I = (opcode.toInt() and 0x0fff).toShort()

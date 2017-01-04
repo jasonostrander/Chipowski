@@ -8,6 +8,7 @@ import org.junit.Test
 /**
  * Created by j.ostrander on 1/3/17.
  */
+
 class Chip8Test {
     lateinit var chip8: Chip8
 
@@ -38,6 +39,7 @@ class Chip8Test {
         chip8.opcode = 0x00e0
         chip8.decodeAndExecuteOpcode()
         assertTrue(chip8.gfx.all { it == 0.toByte() })
+        assertEquals(2, chip8.pc)
     }
 
     @Test
@@ -73,8 +75,176 @@ class Chip8Test {
 
     @Test
     fun testOpcodeSkipNextIfVXEqualsNN() {
+        val X = 1
         val NN = 0xdf
-        chip8.opcode = (0x3000 + NN).toShort()
+        chip8.opcode = (0x3000 + X.shl(8) + NN).toShort()
+
+        // Test success
+        chip8.V[X] = NN.toByte()
         chip8.decodeAndExecuteOpcode()
+        assertEquals(4, chip8.pc)
+
+        // test failure
+        chip8.pc = 0
+        chip8.V[X] = 0
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSkipNextIfVXNotEqualsNN() {
+        val X = 1
+        val NN = 0xdf
+        chip8.opcode = (0x4000 + X.shl(8) + NN).toShort()
+
+        // Test success
+        chip8.V[X] = NN.toByte()
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(2, chip8.pc)
+
+        // test failure
+        chip8.pc = 0
+        chip8.V[X] = 0
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(4, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSkipNextIfVXEqualVY() {
+        val X = 1
+        val Y = 3
+        chip8.opcode = (0x5000 + X.shl(8) + Y.shl(4)).toShort()
+
+        // Test success
+        chip8.V[X] = 0x4
+        chip8.V[Y] = 0x4
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(4, chip8.pc)
+
+        // test failure
+        chip8.pc = 0
+        chip8.V[Y] = 0
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSetVXtoNN() {
+        val NN = 0xad
+        val X = 1
+        chip8.opcode = (0x6000 + X.shl(8) + NN).toShort()
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(NN.toByte(), chip8.V[X])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeAddNNToVX() {
+        val nn = 0xad
+        val x = 1
+        chip8.V[x] = 0x01
+        chip8.opcode = (0x7000 + x.shl(8) + nn).toShort()
+        chip8.decodeAndExecuteOpcode()
+        assertEquals((nn + 0x01).toByte(), chip8.V[x])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSetVXtoVY() {
+        val x = 0x01
+        val y = 0x02
+        chip8.V[y] = 0x03
+        chip8.opcode = (0x8000 + x.shl(8) + y.shl(4)).toShort()
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0x03.toByte(), chip8.V[x])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSetVXtoVXorVY() {
+        val x = 0x01
+        val y = 0x02
+        chip8.V[x] = 0x04
+        chip8.V[y] = 0x03
+        chip8.opcode = (0x8001 + x.shl(8) + y.shl(4)).toShort()
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0x07.toByte(), chip8.V[x])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSetVXtoVXAndVY() {
+        val x = 0x01
+        val y = 0x02
+        chip8.V[x] = 0x05
+        chip8.V[y] = 0x03
+        chip8.opcode = (0x8002 + x.shl(8) + y.shl(4)).toShort()
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0x01.toByte(), chip8.V[x])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSetVXToVXXorVY() {
+        val x = 0x01
+        val y = 0x02
+        chip8.V[x] = 0x05
+        chip8.V[y] = 0x03
+        chip8.opcode = (0x8003 + x.shl(8) + y.shl(4)).toShort()
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0x06.toByte(), chip8.V[x])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeAddVXToVYWithoutCarry() {
+        val x = 0x01
+        val y = 0x02
+        chip8.V[x] = 0x05
+        chip8.V[y] = 0x03
+        chip8.opcode = (0x8004 + x.shl(8) + y.shl(4)).toShort()
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0x08.toByte(), chip8.V[x])
+        assertEquals(0.toByte(), chip8.V[0xf])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeAddVXToVYWithCarry() {
+        val x = 0x01
+        val y = 0x02
+        chip8.V[x] = 0xff.toByte()
+        chip8.V[y] = 0x01
+        chip8.opcode = (0x8004 + x.shl(8) + y.shl(4)).toShort()
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0.toByte(), chip8.V[x])
+        assertEquals(1.toByte(), chip8.V[0xf])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSubtractVYFromVXWithoutBorrow() {
+        val x = 0x01
+        val y = 0x02
+        chip8.V[x] = 0x02
+        chip8.V[y] = 0x01
+        chip8.opcode = (0x8005 + x.shl(8) + y.shl(4)).toShort()
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(1.toByte(), chip8.V[x])
+        assertEquals(0.toByte(), chip8.V[0xf])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSubtractVYFromVXWithBorrow() {
+        val x = 0x01
+        val y = 0x02
+        chip8.V[x] = 0x01
+        chip8.V[y] = 0x02
+        chip8.opcode = (0x8005 + x.shl(8) + y.shl(4)).toShort()
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0xff.toByte(), chip8.V[x])
+        assertEquals(1.toByte(), chip8.V[0xf])
+        assertEquals(2, chip8.pc)
     }
 }
