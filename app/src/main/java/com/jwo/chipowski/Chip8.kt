@@ -1,5 +1,7 @@
 package com.jwo.chipowski
 
+import java.util.*
+
 /**
  * Created by j.ostrander on 12/21/16.
  */
@@ -17,6 +19,7 @@ class Chip8() {
     val stack = IntArray(16)
     var sp: Int = 0
     val key = ByteArray(16)
+    val random = Random()
 
 //    val opMap = mapOf<Int, Function<Unit>>(
 //            0xA000 to Chip8::ANNN
@@ -185,8 +188,22 @@ class Chip8() {
             }
             pc += 2
         }
+        0x9000 -> {
+            val x = opcode.toInt().shr(8) and 0xf
+            val y = opcode.toInt().shr(4) and 0xf
+            pc += if (V[x] == V[y]) 2 else 4
+        }
         0xA000 -> {
             I = (opcode.toInt() and 0x0fff).toShort()
+            pc += 2
+        }
+        0xB000 -> {
+            pc = (opcode.toInt() and 0xfff) + V[0]
+        }
+        0xC000 -> {
+            val x = opcode.toInt().shr(8) and 0xf
+            val nn = opcode.toInt() and 0xff
+            V[x] = (nn and random.nextInt()).toByte()
             pc += 2
         }
         else -> {

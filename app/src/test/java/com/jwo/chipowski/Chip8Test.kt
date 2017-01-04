@@ -308,4 +308,52 @@ class Chip8Test {
         assertEquals(0.toByte(), chip8.V[0xf])
         assertEquals(4, chip8.pc)
     }
+
+    @Test
+    fun testOpcodeSkipIfVXDoesNotEqualVY() {
+        val x = 0x01
+        val y = 0x02
+        chip8.opcode = (0x9000 + x.shl(8) + y.shl(4)).toShort()
+
+        // Test failure
+        chip8.V[x] = 0x02
+        chip8.V[y] = 0x01
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(4, chip8.pc)
+
+        // Test success
+        chip8.pc = 0
+        chip8.V[x] = 0x01
+        chip8.V[y] = 0x01
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSetAToNNN() {
+        val nnn = 0x102
+        chip8.opcode = ((0xa000 + nnn).toShort())
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(nnn.toShort(), chip8.I)
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeJumpToNNNPlusV0() {
+        val nnn = 0x102
+        chip8.V[0] = 0xf
+        chip8.opcode = ((0xb000 + nnn).toShort())
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(nnn + chip8.V[0], chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSetVXToBitwiseRandAndNN() {
+        val nn = 0x12
+        val x = 0x01
+        chip8.opcode = ((0xc000 + + x.shl(8) + nn).toShort())
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(nn, chip8.V[x].toInt() or nn) // can't have any bits that aren't in nn
+        assertEquals(2, chip8.pc)
+    }
 }
