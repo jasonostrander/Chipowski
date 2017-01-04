@@ -164,6 +164,21 @@ class Chip8() {
                     V[0xf] = if (a and 0x100 == 0x100) 1 else 0 // borrow bit
                     V[x] = a.toByte()
                 }
+                0x6 -> {
+                    V[0xf] = (V[x].toInt() and 0x1).toByte()
+                    V[x] = V[x].toInt().shr(1).toByte()
+                }
+                0x7 -> {
+                    val a = (V[x].toInt() and 0xff)
+                    val b = (V[y].toInt() and 0xff)
+                    val c = b - a
+                    V[0xf] = if (c and 0x100 == 0x100) 1 else 0 // borrow bit
+                    V[x] = c.toByte()
+                }
+                0xe -> {
+                    V[0xf] = (V[x].toInt() and 0x80).shr(7).toByte()
+                    V[x] = V[x].toInt().shl(1).toByte()
+                }
                 else -> {
                     throw UnsupportedOperationException("Unknown opcode $opcode")
                 }
