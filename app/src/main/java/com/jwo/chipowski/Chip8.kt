@@ -11,14 +11,14 @@ class Chip8() {
     var opcode: Short = 0
     val memory = ByteArray(4096)
     val V = ByteArray(16)
-    var I: Short = 0
+    var I: Int = 0
     var pc: Int = 0
-    val gfx = ByteArray(64 * 32)
-    var delay_timer: Short = 0
-    var sound_timer: Short = 0
+    val gfx = ByteArray(64 * 32)  // 64 x 32 pixel display
+    var delay_timer: Byte = 0
+    var sound_timer: Byte = 0
     val stack = IntArray(16)
     var sp: Int = 0
-    val key = ByteArray(16)
+    val key = BooleanArray(16)
     val random = Random()
 
 //    val opMap = mapOf<Int, Function<Unit>>(
@@ -36,7 +36,7 @@ class Chip8() {
         sound_timer = 0
         stack.fill(0, 0, stack.size)
         sp = 0
-        key.fill(0, 0, key.size)
+        key.fill(false, 0, key.size)
 
         // TODO: load font set
         for (i in 0..80) {
@@ -194,7 +194,7 @@ class Chip8() {
             pc += if (V[x] == V[y]) 2 else 4
         }
         0xA000 -> {
-            I = (opcode.toInt() and 0x0fff).toShort()
+            I = opcode.toInt() and 0x0fff
             pc += 2
         }
         0xB000 -> {
@@ -205,6 +205,74 @@ class Chip8() {
             val nn = opcode.toInt() and 0xff
             V[x] = (nn and random.nextInt()).toByte()
             pc += 2
+        }
+        0xe000 -> {
+            val x = opcode.toInt().shr(8) and 0xf
+            when (opcode.toInt() and 0x00ff) {
+                0x9e -> {
+                    pc += if (key[x]) 4 else 2
+                }
+                0xa1 -> {
+                    pc += if (!key[x]) 4 else 2
+                }
+                else -> {
+                    throw UnsupportedOperationException("Unknown opcode $opcode")
+                }
+            }
+        }
+        0xf000 -> {
+            val x = opcode.toInt().shr(8) and 0xf
+            when (opcode.toInt() and 0xff) {
+                0x07 -> {
+                    V[x] = delay_timer.toByte()
+                    pc += 2
+                }
+                0x0a -> {
+                    for (i in 0..key.size - 1) {
+                        if (key[i]) {
+                            V[x] = i.toByte()
+                            pc += 2
+                        }
+                    }
+                }
+                0x15 -> {
+                    delay_timer = V[x]
+                    pc += 2
+                }
+                0x18 -> {
+                    sound_timer = V[x]
+                    pc += 2
+                }
+                0x1e -> {
+                    I += V[x]
+                    pc += 2
+                }
+                0x29 -> {
+
+                }
+                0x33 -> {
+                    val vx = V[x].toInt() and 0xff
+                    memory[I] = ((vx/100) % 10).toByte()
+                    memory[I+1] = ((vx/10) % 10).toByte()
+                    memory[I+2] = (vx % 10).toByte()
+                    pc += 2
+                }
+                0x55 -> {
+                    for (i in 0..x) {
+                        memory[I + i] = V[i]
+                    }
+                    pc += 2
+                }
+                0x65 -> {
+                    for (i in 0..x) {
+                        V[i] = memory[I + i]
+                    }
+                    pc += 2
+                }
+                else -> {
+                    throw UnsupportedOperationException("Unknown opcode $opcode")
+                }
+            }
         }
         else -> {
             throw UnsupportedOperationException("Unknown opcode $opcode")

@@ -24,7 +24,7 @@ class Chip8Test {
 
         assertEquals(0x200, chip8.pc)
         assertEquals(0.toShort(), chip8.opcode)
-        assertEquals(0.toShort(), chip8.I)
+        assertEquals(0, chip8.I)
         assertEquals(0, chip8.sp)
 
         // TODO: verify reset of display, stack, registers, memory
@@ -334,7 +334,7 @@ class Chip8Test {
         val nnn = 0x102
         chip8.opcode = ((0xa000 + nnn).toShort())
         chip8.decodeAndExecuteOpcode()
-        assertEquals(nnn.toShort(), chip8.I)
+        assertEquals(nnn, chip8.I)
         assertEquals(2, chip8.pc)
     }
 
@@ -351,9 +351,180 @@ class Chip8Test {
     fun testOpcodeSetVXToBitwiseRandAndNN() {
         val nn = 0x12
         val x = 0x01
-        chip8.opcode = ((0xc000 + + x.shl(8) + nn).toShort())
+        chip8.opcode = ((0xc000 + x.shl(8) + nn).toShort())
         chip8.decodeAndExecuteOpcode()
-        assertEquals(nn, chip8.V[x].toInt() or nn) // can't have any bits that aren't in nn
+        assertEquals(0, chip8.V[x].toInt() and nn.inv()) // can't have any bits that aren't in nn
+        assertEquals(2, chip8.pc)
+    }
+
+    // TODO: implement graphics
+//    @Test
+//    fun testOpcodeDrawSpriteAtCoordinate() {
+//        val I = chip8.I
+//        // pixel has width 8 pixels, height n pixels
+//        val n = 0x4
+//        val x = 0x01
+//        val y = 0x02
+//        chip8.opcode = ((0xd000 + x.shl(8) + y.shl(4) + n).toShort())
+//        chip8.decodeAndExecuteOpcode()
+//
+//        val vx = chip8.V[x] // vx in range 0 - 64
+//        val vy = chip8.V[y] // vy in range 0 - 32
+//        for (i in 0..n) {
+//            // vx = 0, vy = 1, 0 + 1 * 64 * 0 = 0
+//            assertEquals(chip8.memory[I + i], chip8.gfx[vx + vy + 64*n])
+//        }
+//        assertEquals(I, chip8.I) // I doesn't change
+//        assertEquals(2, chip8.pc)
+//
+//        // VF flip
+//
+//        // VF doesn't flip
+//    }
+
+    @Test
+    fun testOpcodeSkipIfKeyInVXPressed() {
+        val x = 0x01
+        chip8.opcode = ((0xe09e + x.shl(8)).toShort())
+        val key = 0x1
+        chip8.V[x] = key.toByte()
+
+        chip8.key[key] = false
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(2, chip8.pc)
+
+        chip8.pc = 0
+        chip8.key[key] = true
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(4, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSkipIfKeyInVXNotPressed() {
+        val x = 0x01
+        chip8.opcode = ((0xe0a1 + x.shl(8)).toShort())
+        val key = 0x1
+        chip8.V[x] = key.toByte()
+
+        chip8.key[key] = false
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(4, chip8.pc)
+
+        chip8.pc = 0
+        chip8.key[key] = true
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSetVXToDelayTimer() {
+        chip8.delay_timer = 0x7
+        val x = 0x01
+        chip8.opcode = ((0xf007 + x.shl(8)).toShort())
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0x7.toByte(), chip8.V[x])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeAwaitKeyPressThenStoreInVX() {
+        // Should be a blocking operation, all instructions halted
+        val x = 0x01
+        chip8.opcode = ((0xf00a + x.shl(8)).toShort())
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0, chip8.pc)
+
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0, chip8.pc)
+
+        chip8.key[0] = true
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0.toByte(), chip8.V[x])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSetDelayTimerToVX() {
+        val x = 0x01
+        chip8.V[x] = 0x7
+        chip8.opcode = ((0xf015 + x.shl(8)).toShort())
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0x7.toByte(), chip8.delay_timer)
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSetSoundTimerToVX() {
+        val x = 0x01
+        chip8.V[x] = 0x7
+        chip8.opcode = ((0xf018 + x.shl(8)).toShort())
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0x7.toByte(), chip8.sound_timer)
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeAddVXtoI() {
+        val x = 0x01
+        chip8.V[x] = 0x7
+        chip8.I = 0x1
+        chip8.opcode = ((0xf01e + x.shl(8)).toShort())
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0x8, chip8.I)
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeSetIToLocationOfSprite() {
+        val x = 0x01
+        chip8.V[x] = 0x7
+        chip8.opcode = ((0xf029 + x.shl(8)).toShort())
+        chip8.decodeAndExecuteOpcode()
+//        assertEquals(0, chip8.I)
+//        assertEquals(2, chip8.pc)
+        // TODO: implement this
+    }
+
+    @Test
+    fun testOpcodeStoreBinaryCodedVX() {
+        val x = 0x01
+        chip8.V[x] = 0x95.toByte() // 149
+        chip8.opcode = ((0xf033 + x.shl(8)).toShort())
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(1.toByte(), chip8.memory[chip8.I])
+        assertEquals(4.toByte(), chip8.memory[chip8.I + 1])
+        assertEquals(9.toByte(), chip8.memory[chip8.I + 2])
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeStoreVInMemory() {
+        val x = 0x01
+        chip8.V[0] = 0x1
+        chip8.V[x] = 0xf
+        chip8.opcode = ((0xf055 + x.shl(8)).toShort())
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0x1.toByte(), chip8.memory[chip8.I])
+        assertEquals(0xf.toByte(), chip8.memory[chip8.I + 1])
+        for (i in 2..0xe) {
+            assertEquals(0.toByte(), chip8.memory[chip8.I + i])
+        }
+        assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testOpcodeFillVFromMemory() {
+        val x = 0x01
+        chip8.I = 0xf
+        chip8.memory[chip8.I] = 0x1
+        chip8.memory[chip8.I + 1] = 0xf
+        chip8.opcode = ((0xf065 + x.shl(8)).toShort())
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(0x1.toByte(), chip8.V[0])
+        assertEquals(0xf.toByte(), chip8.V[1])
+        for (i in 2..0xe) {
+            assertEquals(0.toByte(), chip8.V[i])
+        }
         assertEquals(2, chip8.pc)
     }
 }
