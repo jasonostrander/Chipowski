@@ -248,7 +248,8 @@ class Chip8() {
                     pc += 2
                 }
                 0x29 -> {
-
+                    I = V[x] * 5
+                    pc += 2
                 }
                 0x33 -> {
                     val vx = V[x].toInt() and 0xff

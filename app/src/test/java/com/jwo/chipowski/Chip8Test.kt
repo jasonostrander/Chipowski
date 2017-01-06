@@ -477,12 +477,16 @@ class Chip8Test {
     @Test
     fun testOpcodeSetIToLocationOfSprite() {
         val x = 0x01
-        chip8.V[x] = 0x7
         chip8.opcode = ((0xf029 + x.shl(8)).toShort())
-        chip8.decodeAndExecuteOpcode()
-//        assertEquals(0, chip8.I)
-//        assertEquals(2, chip8.pc)
-        // TODO: implement this
+
+        var pc = 0
+        for (i in 0..0xf) {
+            pc += 2
+            chip8.V[x] = i.toByte()
+            chip8.decodeAndExecuteOpcode()
+            assertEquals(i * 5, chip8.I)
+            assertEquals(pc, chip8.pc)
+        }
     }
 
     @Test
