@@ -18,7 +18,7 @@ class Chip8() {
     var sound_timer: Byte = 0
     val stack = IntArray(16)
     var sp: Int = 0
-    val key = BooleanArray(16)
+    val keys = BooleanArray(16)
     val random = Random()
 
     fun init() {
@@ -32,19 +32,14 @@ class Chip8() {
         sound_timer = 0
         stack.fill(0, 0, stack.size)
         sp = 0
-        key.fill(false, 0, key.size)
+        keys.fill(false, 0, keys.size)
 
         // load font set
         chip8_fontset.forEachIndexed { i, b -> memory[i] = b.toByte() }
-
-        // TODO: Load program
-//        for (i in 0..bufferSize) {
-//            memory[i + 512] = buffer[i]
-//        }
     }
 
-    fun loadGame(s: String) {
-        throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
+    fun loadGame(game: ByteArray) {
+        game.forEachIndexed { i, byte -> memory[i + 0x200] = byte }
     }
 
     fun emulateCycle() {
@@ -53,8 +48,6 @@ class Chip8() {
 
         // decode and execute opcode
         decodeAndExecuteOpcode()
-//        val f = opMap[opcode.toInt() and 0xF000]
-//        f.run {  }
 
         // update timers
         if (delay_timer > 0) --delay_timer
@@ -62,12 +55,12 @@ class Chip8() {
             if (sound_timer.toInt() == 1) {
                 // TODO: make beep sound
             }
-            --sound_timer // TODO: check for overflow
+            --sound_timer // TODO: test for overflows
         }
     }
 
-    fun setKeys() {
-        throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
+    fun setKeys(keys: BooleanArray) {
+        keys.forEachIndexed { i, b -> this.keys[i] = b }
     }
 
     fun decodeAndExecuteOpcode()  = when (opcode.toInt() and 0xF000) {
@@ -224,10 +217,10 @@ class Chip8() {
             val x = opcode.toInt().shr(8) and 0xf
             when (opcode.toInt() and 0x00ff) {
                 0x9e -> {
-                    pc += if (key[x]) 4 else 2
+                    pc += if (keys[x]) 4 else 2
                 }
                 0xa1 -> {
-                    pc += if (!key[x]) 4 else 2
+                    pc += if (!keys[x]) 4 else 2
                 }
                 else -> {
                     throw UnsupportedOperationException("Unknown opcode $opcode")
@@ -242,8 +235,8 @@ class Chip8() {
                     pc += 2
                 }
                 0x0a -> {
-                    for (i in 0..key.size - 1) {
-                        if (key[i]) {
+                    for (i in 0..keys.size - 1) {
+                        if (keys[i]) {
                             V[x] = i.toByte()
                             pc += 2
                         }
@@ -304,7 +297,7 @@ fun mainLoop() {
 
     // Init chip8 system and load game
     chip8.init()
-    chip8.loadGame("pong")
+//    chip8.loadGame("pong")
 
     // game loop
     while (true) {
@@ -315,8 +308,8 @@ fun mainLoop() {
         if (chip8.drawFlag)
             drawGraphics()
 
-        // Store key press state
-        chip8.setKeys()
+        // Store keys press state
+//        chip8.setKeys()
     }
 }
 

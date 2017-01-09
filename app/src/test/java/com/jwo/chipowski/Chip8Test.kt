@@ -47,6 +47,20 @@ class Chip8Test {
     }
 
     @Test
+    fun testLoadGame() {
+        val game = byteArrayOf(0xd, 0xe, 0xa, 0xd)
+        chip8.loadGame(game)
+        game.forEachIndexed { i, byte -> assertEquals(byte, chip8.memory[0x200 + i]) }
+    }
+
+    @Test
+    fun testSetKeys() {
+        val keys = booleanArrayOf(true, false, true)
+        chip8.setKeys(keys)
+        keys.forEachIndexed { i, b -> assertEquals(b, chip8.keys[i]) }
+    }
+
+    @Test
     fun testOpcodeDisplayClear() {
         chip8.opcode = 0x00e0
         chip8.decodeAndExecuteOpcode()
@@ -429,12 +443,12 @@ class Chip8Test {
         val key = 0x1
         chip8.V[x] = key.toByte()
 
-        chip8.key[key] = false
+        chip8.keys[key] = false
         chip8.decodeAndExecuteOpcode()
         assertEquals(2, chip8.pc)
 
         chip8.pc = 0
-        chip8.key[key] = true
+        chip8.keys[key] = true
         chip8.decodeAndExecuteOpcode()
         assertEquals(4, chip8.pc)
     }
@@ -446,12 +460,12 @@ class Chip8Test {
         val key = 0x1
         chip8.V[x] = key.toByte()
 
-        chip8.key[key] = false
+        chip8.keys[key] = false
         chip8.decodeAndExecuteOpcode()
         assertEquals(4, chip8.pc)
 
         chip8.pc = 0
-        chip8.key[key] = true
+        chip8.keys[key] = true
         chip8.decodeAndExecuteOpcode()
         assertEquals(2, chip8.pc)
     }
@@ -477,7 +491,7 @@ class Chip8Test {
         chip8.decodeAndExecuteOpcode()
         assertEquals(0, chip8.pc)
 
-        chip8.key[0] = true
+        chip8.keys[0] = true
         chip8.decodeAndExecuteOpcode()
         assertEquals(0.toByte(), chip8.V[x])
         assertEquals(2, chip8.pc)
