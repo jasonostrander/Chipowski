@@ -206,6 +206,26 @@ class Chip8() {
             V[x] = (nn and random.nextInt()).toByte()
             pc += 2
         }
+        0xd000 -> {
+            val vx = V[opcode.toInt().shr(8) and 0xf]
+            val vy = V[opcode.toInt().shr(4) and 0xf]
+            val n = opcode.toInt() and 0xf
+            V[0xf] = 0
+            for (i in 0..n - 1) {
+                val pixel = memory[I + i].toInt()
+                for (b in 0..7) {
+                    if (pixel and (0x80.shr(b)) != 0) {
+                        val j = vx + b + 64*(vy + i)
+                        if (gfx[vx + b + 64 * (vy + i)].toInt() == 1) {
+                            V[0xf] = 1
+                        }
+                        gfx[j] = (gfx[j].toInt() xor 1).toByte()
+                    }
+                }
+            }
+            drawFlag = true
+            pc += 2
+        }
         0xe000 -> {
             val x = opcode.toInt().shr(8) and 0xf
             when (opcode.toInt() and 0x00ff) {

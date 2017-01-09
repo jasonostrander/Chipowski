@@ -357,30 +357,56 @@ class Chip8Test {
         assertEquals(2, chip8.pc)
     }
 
-    // TODO: implement graphics
-//    @Test
-//    fun testOpcodeDrawSpriteAtCoordinate() {
-//        val I = chip8.I
-//        // pixel has width 8 pixels, height n pixels
-//        val n = 0x4
-//        val x = 0x01
-//        val y = 0x02
-//        chip8.opcode = ((0xd000 + x.shl(8) + y.shl(4) + n).toShort())
-//        chip8.decodeAndExecuteOpcode()
-//
-//        val vx = chip8.V[x] // vx in range 0 - 64
-//        val vy = chip8.V[y] // vy in range 0 - 32
-//        for (i in 0..n) {
-//            // vx = 0, vy = 1, 0 + 1 * 64 * 0 = 0
-//            assertEquals(chip8.memory[I + i], chip8.gfx[vx + vy + 64*n])
-//        }
-//        assertEquals(I, chip8.I) // I doesn't change
-//        assertEquals(2, chip8.pc)
-//
-//        // VF flip
-//
-//        // VF doesn't flip
-//    }
+    @Test
+    fun testOpcodeDrawSpriteAtCoordinate() {
+        val I = chip8.I
+        // pixel has width 8 pixels, height n pixels
+        val n = 0x4
+        val x = 0x01
+        val y = 0x02
+        chip8.V[x] = 1
+        chip8.V[y] = 1
+        chip8.memory[I] = 0x8
+        chip8.memory[I + 1] = 0x4
+        chip8.memory[I + 2] = 0xf
+        chip8.memory[I + 3] = 0x1
+        val gfx_exp = 0x08040f01
+        chip8.opcode = ((0xd000 + x.shl(8) + y.shl(4) + n).toShort())
+        chip8.decodeAndExecuteOpcode()
+
+        // VF no flip
+        val vx = chip8.V[x] // vx in range 0 - 64
+        val vy = chip8.V[y] // vy in range 0 - 32
+        var index = n * 8 - 1
+        for (i in 0..n - 1) {
+            for (b in 0..7) {
+                val j = vx + b + 64 * (i + vy)
+                val exp = gfx_exp shr(index--) and 0x1
+                println("$i $b $j $exp == ${chip8.gfx[j]}")
+                assertEquals(exp.toByte(), chip8.gfx[j])
+            }
+        }
+        assertEquals(I, chip8.I) // I doesn't change
+        assertEquals(chip8.V[0xf], 0.toByte()) // no pixel flip
+        assertEquals(2, chip8.pc)
+        assertTrue(chip8.drawFlag)
+
+        // VF flip
+        chip8.memory[I] = 0x8
+        chip8.memory[I + 1] = 0x3
+        chip8.memory[I + 2] = 0x1
+        chip8.memory[I + 3] = 0xf
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(chip8.V[0xf], 1.toByte()) // pixel flip
+
+        // VF unchanged from previous
+        chip8.memory[I] = 0x0
+        chip8.memory[I + 1] = 0x0
+        chip8.memory[I + 2] = 0x0
+        chip8.memory[I + 3] = 0x0
+        chip8.decodeAndExecuteOpcode()
+        assertEquals(chip8.V[0xf], 0.toByte()) // no pixel flip
+    }
 
     @Test
     fun testOpcodeSkipIfKeyInVXPressed() {
