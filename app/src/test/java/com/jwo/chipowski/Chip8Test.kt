@@ -19,7 +19,6 @@ class Chip8Test {
 
     @Test
     fun testInit() {
-        // TODO: actually run some instructions, then verify reset
         chip8.init()
 
         assertEquals(0x200, chip8.pc)
@@ -27,11 +26,24 @@ class Chip8Test {
         assertEquals(0, chip8.I)
         assertEquals(0, chip8.sp)
 
-        // TODO: verify reset of display, stack, registers, memory
+        chip8.gfx.forEach { assertEquals(0.toByte(), it) }
+        chip8.stack.forEach { assertEquals(0, it) }
+        chip8.V.forEach { assertEquals(0.toByte(), it) }
+        chip8.memory.slice(80..chip8.memory.size - 1).forEach { assertEquals(0.toByte(), it) }
 
-        // TODO: verify load of fonts
+        // verify load of fonts
+        for (i in 0..80-1) {
+            assertEquals(chip8_fontset[i], chip8.memory[i].toInt() and 0xff)
+        }
 
-        // TODO: verify reset timers
+        // verify timers
+        assertEquals(0.toByte(), chip8.delay_timer)
+        assertEquals(0.toByte(), chip8.sound_timer)
+    }
+
+    @Test
+    fun testInitAfterRunning() {
+        // TODO: actually run some instructions, then verify reset
     }
 
     @Test

@@ -21,10 +21,6 @@ class Chip8() {
     val key = BooleanArray(16)
     val random = Random()
 
-//    val opMap = mapOf<Int, Function<Unit>>(
-//            0xA000 to Chip8::ANNN
-//    )
-
     fun init() {
         opcode = 0
         memory.fill(0, 0, memory.size)
@@ -38,10 +34,8 @@ class Chip8() {
         sp = 0
         key.fill(false, 0, key.size)
 
-        // TODO: load font set
-        for (i in 0..80) {
-//            memory[i] = chip8_fontset[i]
-        }
+        // load font set
+        chip8_fontset.forEachIndexed { i, b -> memory[i] = b.toByte() }
 
         // TODO: Load program
 //        for (i in 0..bufferSize) {
