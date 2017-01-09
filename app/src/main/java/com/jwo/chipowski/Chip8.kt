@@ -42,12 +42,17 @@ class Chip8() {
         game.forEachIndexed { i, byte -> memory[i + 0x200] = byte }
     }
 
+    fun nextOpcode(): Short = ((memory[pc].toInt() and 0xff) shl 8 or (memory[pc + 1].toInt() and 0xff)).toShort()
+
     fun emulateCycle() {
         // fetch opcode
-        opcode = (memory[pc].toInt() shl 8 or memory[pc + 1].toInt()).toShort()
+        opcode = nextOpcode()
+
+        logcat("opcode ${toHex(opcode)}")
 
         // decode and execute opcode
         decodeAndExecuteOpcode()
+        logcat("" + V.fold("") {s, b -> s + " $b"})
 
         // update timers
         if (delay_timer > 0) --delay_timer
@@ -286,41 +291,4 @@ class Chip8() {
             throw UnsupportedOperationException("Unknown opcode $opcode")
         }
     }
-}
-
-val chip8: Chip8 = Chip8()
-
-fun mainLoop() {
-    // Setup render system and input
-    setupGraphics()
-    setupInput()
-
-    // Init chip8 system and load game
-    chip8.init()
-//    chip8.loadGame("pong")
-
-    // game loop
-    while (true) {
-        // emulate one cycle
-        chip8.emulateCycle()
-
-        // if draw flag set, update the screen
-        if (chip8.drawFlag)
-            drawGraphics()
-
-        // Store keys press state
-//        chip8.setKeys()
-    }
-}
-
-fun drawGraphics() {
-    throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
-}
-
-fun setupInput() {
-    throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
-}
-
-fun setupGraphics() {
-    throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
 }

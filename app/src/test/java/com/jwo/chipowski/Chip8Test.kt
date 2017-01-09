@@ -61,6 +61,17 @@ class Chip8Test {
     }
 
     @Test
+    fun testNextOpcode() {
+        chip8.memory[0] = 0x6a
+        chip8.memory[1] = 0x02
+        chip8.memory[2] = 0xa2.toByte()
+        chip8.memory[3] = 0xea.toByte()
+        assertEquals(0x6a02.toShort(), chip8.nextOpcode())
+        chip8.pc += 2
+        assertEquals(0xa2ea.toShort(), chip8.nextOpcode())
+    }
+
+    @Test
     fun testOpcodeDisplayClear() {
         chip8.opcode = 0x00e0
         chip8.decodeAndExecuteOpcode()
