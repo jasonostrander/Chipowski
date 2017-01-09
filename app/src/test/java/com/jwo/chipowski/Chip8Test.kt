@@ -375,6 +375,7 @@ class Chip8Test {
         chip8.decodeAndExecuteOpcode()
 
         // VF no flip
+        val gfx_copy = chip8.gfx.copyOf()
         val vx = chip8.V[x] // vx in range 0 - 64
         val vy = chip8.V[y] // vy in range 0 - 32
         var index = n * 8 - 1
@@ -382,10 +383,11 @@ class Chip8Test {
             for (b in 0..7) {
                 val j = vx + b + 64 * (i + vy)
                 val exp = gfx_exp shr(index--) and 0x1
-                println("$i $b $j $exp == ${chip8.gfx[j]}")
-                assertEquals(exp.toByte(), chip8.gfx[j])
+                assertEquals(exp.toByte(), gfx_copy[j])
+                gfx_copy[j] = 0 // reset so I can verify other indices are not set
             }
         }
+        assertTrue(gfx_copy.all { it.toInt() == 0 }) // verify that we didn't paint any other pixels
         assertEquals(I, chip8.I) // I doesn't change
         assertEquals(chip8.V[0xf], 0.toByte()) // no pixel flip
         assertEquals(2, chip8.pc)
