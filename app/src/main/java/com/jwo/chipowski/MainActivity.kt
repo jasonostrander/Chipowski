@@ -8,6 +8,7 @@ import kotlinx.android.synthetic.main.activity_main.view.*
 class MainActivity : AppCompatActivity() {
     val TIMESTEP = 20L // 2s
     val chip8 = Chip8()
+    lateinit var handler: GameLoopHandler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,25 +18,32 @@ class MainActivity : AppCompatActivity() {
         chip8.init()
 
         // load game
-        val inputstream = assets.open("c8games/PONG")
+        val inputstream = assets.open("c8games/INVADERS")
         val game = inputstream.readBytes(256)
         chip8.loadGame(game)
 
         // Start emulation
         val thread = HandlerThread("chip8 emulator")
         thread.start()
-        val handler = MyHandler(thread.looper)
+        handler = GameLoopHandler(thread.looper)
+    }
+
+    override fun onResume() {
+        super.onResume()
         handler.sendMessage(Message.obtain())
     }
 
-    inner class MyHandler(looper: Looper) : Handler(looper) {
+    override fun onPause() {
+        super.onPause()
+        handler.removeCallbacksAndMessages(null)
+    }
+
+    inner class GameLoopHandler(looper: Looper) : Handler(looper) {
         override fun handleMessage(msg: Message?) {
             chip8.emulateCycle()
 
             if (chip8.drawFlag) {
                 // update graphics
-                val any = chip8.gfx.any { it == 1.toByte() }
-                logcat("drawing $any")
                 runOnUiThread { activity_main.chip8view.graphics = chip8.gfx }
             }
 
