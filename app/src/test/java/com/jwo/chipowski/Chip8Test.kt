@@ -27,7 +27,7 @@ class Chip8Test {
         assertEquals(0, chip8.sp)
 
         chip8.gfx.forEach { assertEquals(0.toByte(), it) }
-        chip8.stack.forEach { assertEquals(0, it) }
+        chip8.stack.forEach { assertEquals(0.toShort(), it) }
         chip8.V.forEach { assertEquals(0.toByte(), it) }
         chip8.memory.slice(80..chip8.memory.size - 1).forEach { assertEquals(0.toByte(), it) }
 
@@ -81,14 +81,13 @@ class Chip8Test {
 
     @Test
     fun testOpcodeReturn() {
-        // Set initial stack value
-        val sp = chip8.sp
+        chip8.sp = 1
         val pc = 0xdef
-        chip8.stack[chip8.sp] = pc
+        chip8.stack[0] = pc.toShort()
         chip8.opcode = 0x00ee
         chip8.decodeAndExecuteOpcode()
         assertEquals(pc, chip8.pc)
-        assertEquals(sp - 1, chip8.sp)
+        assertEquals(0, chip8.sp)
     }
 
     @Test
@@ -105,7 +104,7 @@ class Chip8Test {
         val pc = chip8.pc
         chip8.opcode = (0x2000 + NNN).toShort()
         chip8.decodeAndExecuteOpcode()
-        assertEquals(pc, chip8.stack[0])
+        assertEquals(pc.toShort(), chip8.stack[0])
         assertEquals(NNN, chip8.pc)
         assertEquals(1, chip8.sp)
     }
@@ -424,7 +423,7 @@ class Chip8Test {
                 gfx_copy[j] = 0 // reset so I can verify other indices are not set
             }
         }
-        assertTrue(gfx_copy.all { it.toInt() == 0 }) // verify that we didn't paint any other pixels
+        assertTrue(gfx_copy.all { it.toInt() == 0 }) // verify that we didn't white any other pixels
         assertEquals(I, chip8.I) // I doesn't change
         assertEquals(chip8.V[0xf], 0.toByte()) // no pixel flip
         assertEquals(2, chip8.pc)

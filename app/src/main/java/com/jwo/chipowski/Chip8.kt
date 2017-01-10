@@ -16,7 +16,7 @@ class Chip8() {
     val gfx = ByteArray(64 * 32)  // 64 x 32 pixel display
     var delay_timer: Byte = 0
     var sound_timer: Byte = 0
-    val stack = IntArray(16)
+    val stack = ShortArray(16)
     var sp: Int = 0
     val keys = BooleanArray(16)
     val random = Random()
@@ -45,14 +45,18 @@ class Chip8() {
     fun nextOpcode(): Short = ((memory[pc].toInt() and 0xff) shl 8 or (memory[pc + 1].toInt() and 0xff)).toShort()
 
     fun emulateCycle() {
+        // TODO: unit test this method
+
         // fetch opcode
         opcode = nextOpcode()
 
-        logcat("opcode ${toHex(opcode)}")
+        logcat("opcode($pc) ${toHex(opcode)}")
 
         // decode and execute opcode
         decodeAndExecuteOpcode()
-        logcat("" + V.fold("") {s, b -> s + " $b"})
+        logcat("registers: " + V.fold("") {s, b -> s + " ${toHex(b)}"})
+        logcat("stack ($sp): " + stack.fold("") {s, b -> s + " $b"})
+        logcat("I = $I")
 
         // update timers
         if (delay_timer > 0) --delay_timer
@@ -77,8 +81,8 @@ class Chip8() {
             }
             0x00ee -> {
                 // returns from subroutine
-                pc = stack[sp] and 0x0fff
                 --sp
+                pc = stack[sp].toInt() and 0xffff
             }
             else -> {
                 throw UnsupportedOperationException("RCA 1802 program. Should not need this")
@@ -90,7 +94,7 @@ class Chip8() {
         }
         0x2000 -> {
             // call subroutine at NNN
-            stack[sp] = pc
+            stack[sp] = pc.toShort()
             sp++
             pc = opcode.toInt() and 0x0fff
         }
