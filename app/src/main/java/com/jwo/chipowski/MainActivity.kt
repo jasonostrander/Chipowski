@@ -9,7 +9,6 @@ class MainActivity : AppCompatActivity() {
     val TIMESTEP = 20L // 2s
     val chip8 = Chip8()
 
-    var counter = 3
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -18,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         chip8.init()
 
         // load game
-        val inputstream = assets.open("c8games/BREAKOUT")
+        val inputstream = assets.open("c8games/PONG")
         val game = inputstream.readBytes(256)
         chip8.loadGame(game)
 
@@ -44,9 +43,7 @@ class MainActivity : AppCompatActivity() {
 //            chip8.setKeys()
 
             // Run every 15ms
-//            if (counter-- > 0) {
-                sendMessageDelayed(Message.obtain(), TIMESTEP)
-//            }
+            sendMessageDelayed(Message.obtain(), TIMESTEP)
         }
     }
 }
