@@ -1,7 +1,9 @@
 package com.jwo.chipowski
 
 import android.os.*
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.widget.ArrayAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 
@@ -13,11 +15,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        activity_main.load_game.setOnClickListener { showGameMenu() }
 
         // Init emulator
         chip8.init()
 
-        // load game
+//        // load game
         val inputstream = assets.open("c8games/INVADERS")
         val game = inputstream.readBytes(256)
         chip8.loadGame(game)
@@ -26,6 +29,24 @@ class MainActivity : AppCompatActivity() {
         val thread = HandlerThread("chip8 emulator")
         thread.start()
         handler = GameLoopHandler(thread.looper)
+    }
+
+    private fun showGameMenu() {
+        val adapter = ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_list_item_single_choice,
+                assets.list("c8games"));
+        AlertDialog.Builder(this)
+                .setTitle("Select a game")
+                .setNegativeButton("Cancel", { dialogInterface, i -> dialogInterface.dismiss() })
+                .setAdapter(adapter, { dialogInterface, i ->
+                    chip8.init()
+                    val inputstream = assets.open("c8games/${adapter.getItem(i)}")
+                    val game = inputstream.readBytes(256)
+                    chip8.loadGame(game)
+                    dialogInterface.dismiss()
+                })
+                .show()
     }
 
     override fun onResume() {
