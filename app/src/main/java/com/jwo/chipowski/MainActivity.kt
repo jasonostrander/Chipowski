@@ -8,7 +8,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 
 class MainActivity : AppCompatActivity() {
-    val TIMESTEP = 20L // 2s
+    val TIMESTEP = 16L
     val chip8 = Chip8()
     lateinit var handler: GameLoopHandler
 
@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
         activity_main.load_game.setOnClickListener { showGameMenu() }
 
         // Init emulator
+        chip8.debug = true
         chip8.init()
 
 //        // load game

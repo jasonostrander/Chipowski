@@ -7,6 +7,7 @@ import java.util.*
  */
 
 class Chip8() {
+    var debug = false
     var drawFlag = false
     var opcode: Short = 0
     val memory = ByteArray(4096)
@@ -50,13 +51,13 @@ class Chip8() {
         // fetch opcode
         opcode = nextOpcode()
 
-        logcat("opcode($pc) ${toHex(opcode)}")
+        if (debug) logcat("opcode($pc) ${toHex(opcode)}")
 
         // decode and execute opcode
         decodeAndExecuteOpcode()
-        logcat("registers: " + V.fold("") {s, b -> s + " ${toHex(b)}"})
-        logcat("stack ($sp): " + stack.fold("") {s, b -> s + " $b"})
-        logcat("I = $I")
+        if (debug) logcat("registers: " + V.fold("") {s, b -> s + " ${b.toHexString()}"})
+        if (debug) logcat("stack ($sp): " + stack.fold("") {s, b -> s + " $b"})
+        if (debug) logcat("I = $I")
 
         // update timers
         if (delay_timer > 0) --delay_timer
@@ -203,16 +204,16 @@ class Chip8() {
             pc += 2
         }
         0xd000 -> {
-            val vx = V[opcode.toInt().shr(8) and 0xf]
-            val vy = V[opcode.toInt().shr(4) and 0xf]
+            val vx = V[opcode.toInt().shr(8) and 0xf].toInt() and 0xff
+            val vy = V[opcode.toInt().shr(4) and 0xf].toInt() and 0xff
             val n = opcode.toInt() and 0xf
             V[0xf] = 0
             for (i in 0..n - 1) {
                 val pixel = memory[I + i].toInt()
                 for (b in 0..7) {
                     if (pixel and (0x80.shr(b)) != 0) {
-                        val j = vx + b + 64*(vy + i)
-                        if (gfx[vx + b + 64 * (vy + i)].toInt() == 1) {
+                        val j = (vx + b).mod(64) + 64*(vy + i).mod(32)
+                        if (gfx[j].toInt() == 1) {
                             V[0xf] = 1
                         }
                         gfx[j] = (gfx[j].toInt() xor 1).toByte()

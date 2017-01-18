@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 
 /**
  * Created by j.ostrander on 1/3/17.
@@ -594,5 +595,17 @@ class Chip8Test {
             assertEquals(0.toByte(), chip8.V[i])
         }
         assertEquals(2, chip8.pc)
+    }
+
+    @Test
+    fun testBugInDrawingCast() {
+        // 6300 6700 00e0 a217 6000 6100 d011 71ff
+        val bytes = File("src/main/assets/c8games/VERS").readBytes()
+        chip8.init()
+        chip8.loadGame(bytes)
+        for (i in 0..200) {
+            chip8.opcode = chip8.nextOpcode()
+            chip8.decodeAndExecuteOpcode()
+        }
     }
 }
