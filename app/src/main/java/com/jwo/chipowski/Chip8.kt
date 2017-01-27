@@ -69,6 +69,10 @@ class Chip8() {
         }
     }
 
+    fun setKey(position: Int, value: Boolean) {
+        this.keys[position] = value
+    }
+
     fun setKeys(keys: BooleanArray) {
         keys.forEachIndexed { i, b -> this.keys[i] = b }
     }

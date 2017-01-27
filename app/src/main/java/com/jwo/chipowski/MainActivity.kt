@@ -3,12 +3,17 @@ package com.jwo.chipowski
 import android.os.*
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.GridLayoutManager
+import android.support.v7.widget.RecyclerView
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Button
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 
 class MainActivity : AppCompatActivity() {
-    val TIMESTEP = 16L
+    val TIMESTEP = 8L
     val chip8 = Chip8()
     lateinit var handler: GameLoopHandler
 
@@ -17,8 +22,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         activity_main.load_game.setOnClickListener { showGameMenu() }
 
+        activity_main.keyboard.layoutManager = GridLayoutManager(this, 4)
+        activity_main.keyboard.adapter = KeyAdapter()
+
         // Init emulator
-        chip8.debug = true
+        chip8.debug = false
         chip8.init()
 
 //        // load game
@@ -30,6 +38,39 @@ class MainActivity : AppCompatActivity() {
         val thread = HandlerThread("chip8 emulator")
         thread.start()
         handler = GameLoopHandler(thread.looper)
+    }
+
+    inner class KeyHolder(val button: Button) : RecyclerView.ViewHolder(button) {
+        fun bind(position: Int) {
+            button.text = "0123456789ABCDEF".substring(position, position+1)
+//            button.setOnTouchListener { view, motionEvent ->
+//                when(motionEvent.action and MotionEvent.ACTION_MASK) {
+//                    MotionEvent.ACTION_DOWN -> {
+//                        chip8.setKey(position, true)
+//                        false
+//                    }
+//                    MotionEvent.ACTION_UP -> {
+//                        chip8.setKey(position, false)
+//                        false
+//                    }
+//                    else -> {
+//                        false
+//                    }
+//                }
+//            }
+        }
+    }
+
+    inner class KeyAdapter : RecyclerView.Adapter<KeyHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): KeyHolder {
+            return KeyHolder(LayoutInflater.from(parent?.context).inflate(R.layout.key, parent, false) as Button)
+        }
+
+        override fun onBindViewHolder(holder: KeyHolder?, position: Int) {
+            holder?.bind(position)
+        }
+
+        override fun getItemCount(): Int = 16
     }
 
     private fun showGameMenu() {
@@ -60,6 +101,7 @@ class MainActivity : AppCompatActivity() {
         handler.removeCallbacksAndMessages(null)
     }
 
+
     inner class GameLoopHandler(looper: Looper) : Handler(looper) {
         override fun handleMessage(msg: Message?) {
             chip8.emulateCycle()
@@ -69,8 +111,11 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread { activity_main.chip8view.graphics = chip8.gfx }
             }
 
+
             // set current keys state
-//            chip8.setKeys()
+//            chip8.setKeys(keys)
+            // TODO: UI on background thread, is big no no
+            chip8.setKeys(activity_main.keyboard.children.map { it.isPressed }.toBooleanArray())
 
             // Run every 15ms
             sendMessageDelayed(Message.obtain(), TIMESTEP)

@@ -1,6 +1,8 @@
 package com.jwo.chipowski
 
 import android.util.Log
+import android.view.View
+import android.view.ViewGroup
 
 /**
  * Created by j.ostrander on 1/3/17.
@@ -24,3 +26,6 @@ fun convertGraphicsToText(gfx: ByteArray): String {
     }
     return s
 }
+
+val ViewGroup.children: List<View>
+    get() = (0..childCount - 1).map { getChildAt(it) }
