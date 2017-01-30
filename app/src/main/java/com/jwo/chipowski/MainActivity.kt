@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         activity_main.keyboard.adapter = KeyAdapter()
 
         // Init emulator
-        chip8.debug = false
+        chip8.debug = true
         chip8.init()
 
 //        // load game

@@ -34,6 +34,7 @@ class Chip8() {
         stack.fill(0, 0, stack.size)
         sp = 0
         keys.fill(false, 0, keys.size)
+        drawFlag = false
 
         // load font set
         chip8_fontset.forEachIndexed { i, b -> memory[i] = b.toByte() }

@@ -26,11 +26,13 @@ class Chip8Test {
         assertEquals(0.toShort(), chip8.opcode)
         assertEquals(0, chip8.I)
         assertEquals(0, chip8.sp)
+        assertEquals(false, chip8.drawFlag)
 
         chip8.gfx.forEach { assertEquals(0.toByte(), it) }
         chip8.stack.forEach { assertEquals(0.toShort(), it) }
         chip8.V.forEach { assertEquals(0.toByte(), it) }
         chip8.memory.slice(80..chip8.memory.size - 1).forEach { assertEquals(0.toByte(), it) }
+        chip8.keys.forEach { assertEquals(false, it) }
 
         // verify load of fonts
         for (i in 0..80-1) {
@@ -44,7 +46,18 @@ class Chip8Test {
 
     @Test
     fun testInitAfterRunning() {
-        // TODO: actually run some instructions, then verify reset
+        // Load game code
+        val bytes = File("src/main/assets/c8games/VERS").readBytes()
+        chip8.init()
+        chip8.loadGame(bytes)
+        for (i in 0..2000) {
+            chip8.opcode = chip8.nextOpcode()
+            chip8.decodeAndExecuteOpcode()
+        }
+        chip8.setKey(0, true)
+
+        // re-run init test
+        testInit()
     }
 
     @Test
