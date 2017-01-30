@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -43,21 +44,21 @@ class MainActivity : AppCompatActivity() {
     inner class KeyHolder(val button: Button) : RecyclerView.ViewHolder(button) {
         fun bind(position: Int) {
             button.text = "0123456789ABCDEF".substring(position, position+1)
-//            button.setOnTouchListener { view, motionEvent ->
-//                when(motionEvent.action and MotionEvent.ACTION_MASK) {
-//                    MotionEvent.ACTION_DOWN -> {
-//                        chip8.setKey(position, true)
-//                        false
-//                    }
-//                    MotionEvent.ACTION_UP -> {
-//                        chip8.setKey(position, false)
-//                        false
-//                    }
-//                    else -> {
-//                        false
-//                    }
-//                }
-//            }
+            button.setOnTouchListener { view, motionEvent ->
+                when(motionEvent.action and MotionEvent.ACTION_MASK) {
+                    MotionEvent.ACTION_DOWN -> {
+                        chip8.setKey(position, true)
+                        false
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        chip8.setKey(position, false)
+                        false
+                    }
+                    else -> {
+                        false
+                    }
+                }
+            }
         }
     }
 
@@ -110,12 +111,6 @@ class MainActivity : AppCompatActivity() {
                 // update graphics
                 runOnUiThread { activity_main.chip8view.graphics = chip8.gfx }
             }
-
-
-            // set current keys state
-//            chip8.setKeys(keys)
-            // TODO: UI on background thread, is big no no
-            chip8.setKeys(activity_main.keyboard.children.map { it.isPressed }.toBooleanArray())
 
             // Run every 15ms
             sendMessageDelayed(Message.obtain(), TIMESTEP)
