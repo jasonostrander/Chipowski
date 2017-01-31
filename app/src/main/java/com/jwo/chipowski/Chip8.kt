@@ -89,6 +89,7 @@ class Chip8() {
                 // returns from subroutine
                 --sp
                 pc = stack[sp].toInt() and 0xffff
+                pc += 2
             }
             else -> {
                 throw UnsupportedOperationException("RCA 1802 program. Should not need this")

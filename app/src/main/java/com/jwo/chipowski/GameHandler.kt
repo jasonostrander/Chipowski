@@ -12,14 +12,14 @@ interface GameView {
     fun update(gfx: ByteArray)
 }
 
-class GameHandler(val view: GameView) {
+class GameHandler(val view: GameView, debug: Boolean = false) {
     val TIMESTEP = 8L
     val chip8 = Chip8()
     val handler:GameLoop
     val uiHandler = Handler(Looper.getMainLooper())
 
     init {
-        chip8.debug = true
+        chip8.debug = debug
         chip8.init()
 
         val thread = HandlerThread("GameLoop")

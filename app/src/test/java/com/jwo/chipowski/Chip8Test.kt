@@ -100,7 +100,7 @@ class Chip8Test {
         chip8.stack[0] = pc.toShort()
         chip8.opcode = 0x00ee
         chip8.decodeAndExecuteOpcode()
-        assertEquals(pc, chip8.pc)
+        assertEquals(pc + 2, chip8.pc)
         assertEquals(0, chip8.sp)
     }
 
@@ -618,6 +618,18 @@ class Chip8Test {
         chip8.loadGame(bytes)
         for (i in 0..200) {
             chip8.opcode = chip8.nextOpcode()
+            chip8.decodeAndExecuteOpcode()
+        }
+    }
+
+    @Test
+    fun test15Puzzle() {
+        val bytes = File("src/main/assets/c8games/15PUZZLE").readBytes()
+        chip8.init()
+        chip8.loadGame(bytes)
+        for (i in 0..500) {
+            chip8.opcode = chip8.nextOpcode()
+            println("op(${chip8.pc.toShort().toHexString()}) ${chip8.opcode.toHexString()} I=${chip8.I.toHexString()} V=${chip8.V.map { it.toHexString() }} stack=${chip8.stack.map { it.toHexString() }}")
             chip8.decodeAndExecuteOpcode()
         }
     }

@@ -20,6 +20,8 @@ class MainActivity : AppCompatActivity() {
         }
     })
 
+    val keys = listOf(1, 2, 3, 0xc, 4, 5, 6, 0xe, 7, 8, 9, 0xd, 0xa, 0, 0xb, 0xf)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -36,15 +38,15 @@ class MainActivity : AppCompatActivity() {
 
     inner class KeyHolder(val button: Button) : RecyclerView.ViewHolder(button) {
         fun bind(position: Int) {
-            button.text = getString(R.string.keyboard).substring(position, position+1)
+            button.text = "%X".format(keys[position])
             button.setOnTouchListener { view, motionEvent ->
                 when(motionEvent.action and MotionEvent.ACTION_MASK) {
                     MotionEvent.ACTION_DOWN -> {
-                        gameHandler.setKey(position, true)
+                        gameHandler.setKey(keys[position], true)
                         false
                     }
                     MotionEvent.ACTION_UP -> {
-                        gameHandler.setKey(position, false)
+                        gameHandler.setKey(keys[position], false)
                         false
                     }
                     else -> {
