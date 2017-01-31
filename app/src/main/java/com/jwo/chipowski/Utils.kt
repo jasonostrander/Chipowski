@@ -16,7 +16,7 @@ fun Byte.toHexString(): String = "%02X".format(this)
 
 fun printHex(number: Number) = println(toHex(number))
 
-fun logcat(s: String, e: Exception? = null, tag: String = "jason") = Log.d(tag, s, e)
+fun logcat(s: String, e: Exception? = null, tag: String = "chip8") = Log.d(tag, s, e)
 
 fun convertGraphicsToText(gfx: ByteArray): String {
     var s = ""

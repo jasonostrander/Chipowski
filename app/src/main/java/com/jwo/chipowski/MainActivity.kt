@@ -1,6 +1,6 @@
 package com.jwo.chipowski
 
-import android.os.*
+import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
@@ -14,9 +14,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 
 class MainActivity : AppCompatActivity() {
-    val TIMESTEP = 8L
-    val chip8 = Chip8()
-    lateinit var handler: GameLoopHandler
+    val gameHandler = GameHandler(object : GameView {
+        override fun update(gfx: ByteArray) {
+            activity_main.chip8view.graphics = gfx
+        }
+    })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,32 +28,23 @@ class MainActivity : AppCompatActivity() {
         activity_main.keyboard.layoutManager = GridLayoutManager(this, 4)
         activity_main.keyboard.adapter = KeyAdapter()
 
-        // Init emulator
-        chip8.debug = true
-        chip8.init()
-
-//        // load game
+        // load game
         val inputstream = assets.open("c8games/INVADERS")
         val game = inputstream.readBytes(256)
-        chip8.loadGame(game)
-
-        // Start emulation
-        val thread = HandlerThread("chip8 emulator")
-        thread.start()
-        handler = GameLoopHandler(thread.looper)
+        gameHandler.loadGame(game)
     }
 
     inner class KeyHolder(val button: Button) : RecyclerView.ViewHolder(button) {
         fun bind(position: Int) {
-            button.text = "0123456789ABCDEF".substring(position, position+1)
+            button.text = getString(R.string.keyboard).substring(position, position+1)
             button.setOnTouchListener { view, motionEvent ->
                 when(motionEvent.action and MotionEvent.ACTION_MASK) {
                     MotionEvent.ACTION_DOWN -> {
-                        chip8.setKey(position, true)
+                        gameHandler.setKey(position, true)
                         false
                     }
                     MotionEvent.ACTION_UP -> {
-                        chip8.setKey(position, false)
+                        gameHandler.setKey(position, false)
                         false
                     }
                     else -> {
@@ -78,15 +71,14 @@ class MainActivity : AppCompatActivity() {
         val adapter = ArrayAdapter<String>(
                 this,
                 android.R.layout.simple_list_item_single_choice,
-                assets.list("c8games"));
+                assets.list("c8games"))
         AlertDialog.Builder(this)
                 .setTitle("Select a game")
                 .setNegativeButton("Cancel", { dialogInterface, i -> dialogInterface.dismiss() })
                 .setAdapter(adapter, { dialogInterface, i ->
-                    chip8.init()
                     val inputstream = assets.open("c8games/${adapter.getItem(i)}")
                     val game = inputstream.readBytes(256)
-                    chip8.loadGame(game)
+                    gameHandler.loadGame(game)
                     dialogInterface.dismiss()
                 })
                 .show()
@@ -94,26 +86,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        handler.sendMessage(Message.obtain())
+        gameHandler.start()
     }
 
     override fun onPause() {
         super.onPause()
-        handler.removeCallbacksAndMessages(null)
-    }
-
-
-    inner class GameLoopHandler(looper: Looper) : Handler(looper) {
-        override fun handleMessage(msg: Message?) {
-            chip8.emulateCycle()
-
-            if (chip8.drawFlag) {
-                // update graphics
-                runOnUiThread { activity_main.chip8view.graphics = chip8.gfx }
-            }
-
-            // Run every 15ms
-            sendMessageDelayed(Message.obtain(), TIMESTEP)
-        }
+        gameHandler.pause()
     }
 }
