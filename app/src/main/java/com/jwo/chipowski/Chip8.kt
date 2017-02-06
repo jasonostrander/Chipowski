@@ -233,10 +233,10 @@ class Chip8() {
             val x = opcode.toInt().shr(8) and 0xf
             when (opcode.toInt() and 0x00ff) {
                 0x9e -> {
-                    pc += if (keys[x]) 4 else 2
+                    pc += if (keys[V[x].toInt()]) 4 else 2
                 }
                 0xa1 -> {
-                    pc += if (!keys[x]) 4 else 2
+                    pc += if (!keys[V[x].toInt()]) 4 else 2
                 }
                 else -> {
                     throw UnsupportedOperationException("Unknown opcode $opcode")

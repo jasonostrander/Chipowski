@@ -464,7 +464,7 @@ class Chip8Test {
     fun testOpcodeSkipIfKeyInVXPressed() {
         val x = 0x01
         chip8.opcode = ((0xe09e + x.shl(8)).toShort())
-        val key = 0x1
+        val key = 0x3
         chip8.V[x] = key.toByte()
 
         chip8.keys[key] = false
@@ -481,7 +481,7 @@ class Chip8Test {
     fun testOpcodeSkipIfKeyInVXNotPressed() {
         val x = 0x01
         chip8.opcode = ((0xe0a1 + x.shl(8)).toShort())
-        val key = 0x1
+        val key = 0x3
         chip8.V[x] = key.toByte()
 
         chip8.keys[key] = false
@@ -610,27 +610,21 @@ class Chip8Test {
         assertEquals(2, chip8.pc)
     }
 
-    @Test
-    fun testBugInDrawingCast() {
-        // 6300 6700 00e0 a217 6000 6100 d011 71ff
-        val bytes = File("src/main/assets/c8games/VERS").readBytes()
-        chip8.init()
-        chip8.loadGame(bytes)
-        for (i in 0..200) {
-            chip8.opcode = chip8.nextOpcode()
-            chip8.decodeAndExecuteOpcode()
-        }
-    }
-
-    @Test
-    fun test15Puzzle() {
-        val bytes = File("src/main/assets/c8games/15PUZZLE").readBytes()
-        chip8.init()
-        chip8.loadGame(bytes)
-        for (i in 0..500) {
-            chip8.opcode = chip8.nextOpcode()
-            println("op(${chip8.pc.toShort().toHexString()}) ${chip8.opcode.toHexString()} I=${chip8.I.toHexString()} V=${chip8.V.map { it.toHexString() }} stack=${chip8.stack.map { it.toHexString() }}")
-            chip8.decodeAndExecuteOpcode()
-        }
-    }
+//    @Test
+//    fun testGame() {
+//        val bytes = File("src/main/assets/c8games/15PUZZLE").readBytes()
+//        chip8.init()
+//        chip8.loadGame(bytes)
+//        chip8.keys[1] = true
+//        var enable = false
+//        for (i in 0..500) {
+//            chip8.opcode = chip8.nextOpcode()
+//            if (chip8.opcode.toInt() and 0xf000 == 0xe000) {
+//                enable = !enable
+//            }
+//            if (enable) println("${chip8.opcode.toHexString()} ${chip8.V.map { it.toHexString() }}")
+//            chip8.decodeAndExecuteOpcode()
+//        }
+//        fail()
+//    }
 }

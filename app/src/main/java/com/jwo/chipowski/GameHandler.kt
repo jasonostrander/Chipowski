@@ -13,7 +13,7 @@ interface GameView {
 }
 
 class GameHandler(val view: GameView, debug: Boolean = false) {
-    val TIMESTEP = 8L
+    val TIMESTEP = 1L
     val chip8 = Chip8()
     val handler:GameLoop
     val uiHandler = Handler(Looper.getMainLooper())

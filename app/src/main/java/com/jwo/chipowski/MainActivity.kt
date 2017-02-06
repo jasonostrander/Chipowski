@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
         }
     })
 
-    val keys = listOf(1, 2, 3, 0xc, 4, 5, 6, 0xe, 7, 8, 9, 0xd, 0xa, 0, 0xb, 0xf)
+    val keys = listOf(1, 2, 3, 0xc, 4, 5, 6, 0xd, 7, 8, 9, 0xe, 0xa, 0, 0xb, 0xf)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,4 +95,5 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         gameHandler.pause()
     }
+
 }
