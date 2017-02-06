@@ -17,18 +17,10 @@
         app:layout_widthPercent="100%"
         app:layout_aspectRatio="200%"/>
 
-    <Button
-        android:id="@+id/load_game"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:text="Load Game"/>
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/keyboard"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/chip8view"
-        android:layout_above="@id/load_game"/>
+        android:layout_alignParentBottom="true"/>
 </android.support.percent.PercentRelativeLayout>

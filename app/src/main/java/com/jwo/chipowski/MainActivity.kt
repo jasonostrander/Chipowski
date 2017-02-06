@@ -5,9 +5,7 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.Button
 import kotlinx.android.synthetic.main.activity_main.*
@@ -27,8 +25,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        activity_main.load_game.setOnClickListener { showGameMenu() }
-
         activity_main.keyboard.layoutManager = GridLayoutManager(this, 4)
         activity_main.keyboard.adapter = KeyAdapter()
 
@@ -36,6 +32,19 @@ class MainActivity : AppCompatActivity() {
         val inputstream = assets.open("c8games/INVADERS")
         val game = inputstream.readBytes(256)
         gameHandler.loadGame(game)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.activity_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean = when (item?.itemId) {
+        R.id.action_load -> {
+            showGameMenu()
+            true
+        }
+        else -> super.onOptionsItemSelected(item)
     }
 
     inner class KeyHolder(val button: Button) : RecyclerView.ViewHolder(button) {
