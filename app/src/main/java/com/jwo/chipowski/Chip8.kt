@@ -167,7 +167,7 @@ class Chip8() {
                 }
                 0x5 -> {
                     val a = (V[x].toInt() and 0xff) - (V[y].toInt() and 0xff)
-                    V[0xf] = if (a and 0x100 == 0x100) 1 else 0 // borrow bit
+                    V[0xf] = if (a and 0x100 == 0x100) 0 else 1 // borrow bit
                     V[x] = a.toByte()
                 }
                 0x6 -> {
@@ -175,10 +175,8 @@ class Chip8() {
                     V[x] = V[x].toInt().shr(1).toByte()
                 }
                 0x7 -> {
-                    val a = (V[x].toInt() and 0xff)
-                    val b = (V[y].toInt() and 0xff)
-                    val c = b - a
-                    V[0xf] = if (c and 0x100 == 0x100) 1 else 0 // borrow bit
+                    val c = (V[y].toInt() and 0xff) - (V[x].toInt() and 0xff)
+                    V[0xf] = if (c and 0x100 == 0x100) 0 else 1 // borrow bit
                     V[x] = c.toByte()
                 }
                 0xe -> {

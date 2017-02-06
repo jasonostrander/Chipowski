@@ -264,10 +264,10 @@ class Chip8Test {
         val x = 0x01
         val y = 0x02
         chip8.V[x] = 0xff.toByte()
-        chip8.V[y] = 0x01
+        chip8.V[y] = 0x3
         chip8.opcode = (0x8004 + x.shl(8) + y.shl(4)).toShort()
         chip8.decodeAndExecuteOpcode()
-        assertEquals(0.toByte(), chip8.V[x])
+        assertEquals(0x2.toByte(), chip8.V[x])
         assertEquals(1.toByte(), chip8.V[0xf])
         assertEquals(2, chip8.pc)
     }
@@ -281,7 +281,7 @@ class Chip8Test {
         chip8.opcode = (0x8005 + x.shl(8) + y.shl(4)).toShort()
         chip8.decodeAndExecuteOpcode()
         assertEquals(1.toByte(), chip8.V[x])
-        assertEquals(0.toByte(), chip8.V[0xf])
+        assertEquals(1.toByte(), chip8.V[0xf])
         assertEquals(2, chip8.pc)
     }
 
@@ -294,12 +294,12 @@ class Chip8Test {
         chip8.opcode = (0x8005 + x.shl(8) + y.shl(4)).toShort()
         chip8.decodeAndExecuteOpcode()
         assertEquals(0xff.toByte(), chip8.V[x])
-        assertEquals(1.toByte(), chip8.V[0xf])
+        assertEquals(0.toByte(), chip8.V[0xf])
         assertEquals(2, chip8.pc)
     }
 
     @Test
-    fun testOpcodeShiftVXRightByOne() {
+    fun testOpcodeShiftVXRightByOneSetVF() {
         val x = 0x01
         chip8.V[x] = 0x05
         chip8.opcode = (0x8006 + x.shl(8)).toShort()
@@ -307,13 +307,17 @@ class Chip8Test {
         assertEquals(0x2.toByte(), chip8.V[x])
         assertEquals(1.toByte(), chip8.V[0xf])
         assertEquals(2, chip8.pc)
+    }
 
+    @Test
+    fun testOpcodeShiftVXRightByOneUnSetVF() {
+        val x = 0x01
         chip8.V[x] = 0x04
         chip8.opcode = (0x8006 + x.shl(8)).toShort()
         chip8.decodeAndExecuteOpcode()
         assertEquals(0x2.toByte(), chip8.V[x])
         assertEquals(0.toByte(), chip8.V[0xf])
-        assertEquals(4, chip8.pc)
+        assertEquals(2, chip8.pc)
     }
 
     @Test
@@ -325,7 +329,7 @@ class Chip8Test {
         chip8.opcode = (0x8007 + x.shl(8) + y.shl(4)).toShort()
         chip8.decodeAndExecuteOpcode()
         assertEquals(0x1.toByte(), chip8.V[x])
-        assertEquals(0.toByte(), chip8.V[0xf])
+        assertEquals(1.toByte(), chip8.V[0xf])
         assertEquals(2, chip8.pc)
     }
 
@@ -338,12 +342,12 @@ class Chip8Test {
         chip8.opcode = (0x8007 + x.shl(8) + y.shl(4)).toShort()
         chip8.decodeAndExecuteOpcode()
         assertEquals(0xff.toByte(), chip8.V[x])
-        assertEquals(1.toByte(), chip8.V[0xf])
+        assertEquals(0.toByte(), chip8.V[0xf])
         assertEquals(2, chip8.pc)
     }
 
     @Test
-    fun testOpcodeShiftVXLeftByOne() {
+    fun testOpcodeShiftVXLeftByOneSetVF() {
         val x = 0x01
         chip8.V[x] = 0x84.toByte()
         chip8.opcode = (0x800e + x.shl(8)).toShort()
@@ -351,12 +355,16 @@ class Chip8Test {
         assertEquals(0x08.toByte(), chip8.V[x])
         assertEquals(1.toByte(), chip8.V[0xf])
         assertEquals(2, chip8.pc)
-
+    }
+    @Test
+    fun testOpcodeShiftVXLeftByOneUnSetVF() {
+        val x = 0x01
         chip8.V[x] = 0x04.toByte()
+        chip8.opcode = (0x800e + x.shl(8)).toShort()
         chip8.decodeAndExecuteOpcode()
         assertEquals(0x08.toByte(), chip8.V[x])
         assertEquals(0.toByte(), chip8.V[0xf])
-        assertEquals(4, chip8.pc)
+        assertEquals(2, chip8.pc)
     }
 
     @Test
