@@ -14,13 +14,15 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 
 class MainActivity : AppCompatActivity() {
+    val keys = listOf(1, 2, 3, 0xc, 4, 5, 6, 0xd, 7, 8, 9, 0xe, 0xa, 0, 0xb, 0xf)
     val gameHandler = GameHandler(object : GameView {
         override fun update(gfx: ByteArray) {
             activity_main.chip8view.graphics = gfx
         }
     })
-
-    val keys = listOf(1, 2, 3, 0xc, 4, 5, 6, 0xd, 7, 8, 9, 0xe, 0xa, 0, 0xb, 0xf)
+    val keyHeight: Int by lazy {
+        activity_main.keyboard.height / 4
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     inner class KeyHolder(val button: Button) : RecyclerView.ViewHolder(button) {
         fun bind(position: Int) {
             button.text = "%X".format(keys[position])
+            button.height = keyHeight
             button.setOnTouchListener { view, motionEvent ->
                 when(motionEvent.action and MotionEvent.ACTION_MASK) {
                     MotionEvent.ACTION_DOWN -> {
