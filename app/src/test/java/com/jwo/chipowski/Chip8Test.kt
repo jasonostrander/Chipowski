@@ -504,11 +504,12 @@ class Chip8Test {
 
     @Test
     fun testOpcodeSetVXToDelayTimer() {
-        chip8.delay_timer = 0x7
+        val exp: Byte = 0x6e
+        chip8.delay_timer = exp
         val x = 0x01
         chip8.opcode = ((0xf007 + x.shl(8)).toShort())
         chip8.decodeAndExecuteOpcode()
-        assertEquals(0x7.toByte(), chip8.V[x])
+        assertEquals(exp, chip8.V[x])
         assertEquals(2, chip8.pc)
     }
 
@@ -532,10 +533,10 @@ class Chip8Test {
     @Test
     fun testOpcodeSetDelayTimerToVX() {
         val x = 0x01
-        chip8.V[x] = 0x7
+        chip8.V[x] = 0x80.toByte()
         chip8.opcode = ((0xf015 + x.shl(8)).toShort())
         chip8.decodeAndExecuteOpcode()
-        assertEquals(0x7.toByte(), chip8.delay_timer)
+        assertEquals(0x80.toByte(), chip8.delay_timer)
         assertEquals(2, chip8.pc)
     }
 
@@ -552,11 +553,11 @@ class Chip8Test {
     @Test
     fun testOpcodeAddVXtoI() {
         val x = 0x01
-        chip8.V[x] = 0x7
+        chip8.V[x] = 0xa8.toByte()
         chip8.I = 0x1
         chip8.opcode = ((0xf01e + x.shl(8)).toShort())
         chip8.decodeAndExecuteOpcode()
-        assertEquals(0x8, chip8.I)
+        assertEquals(0xa9, chip8.I)
         assertEquals(2, chip8.pc)
     }
 
@@ -618,21 +619,43 @@ class Chip8Test {
         assertEquals(2, chip8.pc)
     }
 
-//    @Test
-//    fun testGame() {
-//        val bytes = File("src/main/assets/c8games/15PUZZLE").readBytes()
-//        chip8.init()
-//        chip8.loadGame(bytes)
-//        chip8.keys[1] = true
-//        var enable = false
-//        for (i in 0..500) {
-//            chip8.opcode = chip8.nextOpcode()
-//            if (chip8.opcode.toInt() and 0xf000 == 0xe000) {
-//                enable = !enable
-//            }
-//            if (enable) println("${chip8.opcode.toHexString()} ${chip8.V.map { it.toHexString() }}")
-//            chip8.decodeAndExecuteOpcode()
-//        }
-//        fail()
-//    }
+    @Test
+    fun testDelayTimerDecrease() {
+        chip8.delay_timer = 0x7
+        chip8.memory[0] = 0xf0.toByte()
+        chip8.memory[1] = 0x0a.toByte()
+        for (i in 7 downTo 0) {
+            assertEquals(i.toByte(), chip8.delay_timer)
+            chip8.emulateCycle()
+        }
+    }
+
+    @Test
+    fun testDelayTimerComparison() {
+        chip8.delay_timer = 0x80.toByte()
+        chip8.memory[0] = 0xf0.toByte()
+        chip8.memory[1] = 0x0a.toByte()
+        chip8.emulateCycle()
+        assertEquals(0x7f.toByte(), chip8.delay_timer)
+    }
+
+    @Test
+    fun testSoundTimerDecrease() {
+        chip8.sound_timer = 0x7
+        chip8.memory[0] = 0xf0.toByte()
+        chip8.memory[1] = 0x0a.toByte()
+        for (i in 7 downTo 0) {
+            assertEquals(i.toByte(), chip8.sound_timer)
+            chip8.emulateCycle()
+        }
+    }
+
+    @Test
+    fun testSoundTimerComparison() {
+        chip8.sound_timer = 0x80.toByte()
+        chip8.memory[0] = 0xf0.toByte()
+        chip8.memory[1] = 0x0a.toByte()
+        chip8.emulateCycle()
+        assertEquals(0x7f.toByte(), chip8.sound_timer)
+    }
 }

@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         override fun update(gfx: ByteArray) {
             activity_main.chip8view.graphics = gfx
         }
-    })
+    }, debug = true)
     val keyHeight: Int by lazy {
         activity_main.keyboard.height / 4
     }

@@ -59,10 +59,11 @@ class Chip8() {
         if (debug) logcat("registers: " + V.fold("") {s, b -> s + " ${b.toHexString()}"})
         if (debug) logcat("stack ($sp): " + stack.fold("") {s, b -> s + " $b"})
         if (debug) logcat("I = $I")
+        if (debug) logcat("delay_timer=$delay_timer sound_timer=$sound_timer")
 
         // update timers
-        if (delay_timer > 0) --delay_timer
-        if (sound_timer > 0) {
+        if (delay_timer.toInt() and 0xff > 0) --delay_timer
+        if (sound_timer.toInt() and 0xff > 0) {
             if (sound_timer.toInt() == 1) {
                 // TODO: make beep sound
             }
@@ -245,7 +246,7 @@ class Chip8() {
             val x = opcode.toInt().shr(8) and 0xf
             when (opcode.toInt() and 0xff) {
                 0x07 -> {
-                    V[x] = delay_timer.toByte()
+                    V[x] = delay_timer
                     pc += 2
                 }
                 0x0a -> {
@@ -265,7 +266,7 @@ class Chip8() {
                     pc += 2
                 }
                 0x1e -> {
-                    I += V[x]
+                    I += V[x].toInt() and 0xff
                     pc += 2
                 }
                 0x29 -> {

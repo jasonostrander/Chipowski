@@ -51,7 +51,7 @@ class GameHandler(val view: GameView, debug: Boolean = false) {
                 uiHandler.post { view.update(updatedGfx) }
             }
 
-            // Run every 15ms
+            // Run every 16ms
             sendMessageDelayed(Message.obtain(), TIMESTEP)
         }
     }
