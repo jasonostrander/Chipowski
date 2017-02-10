@@ -49,8 +49,6 @@ class Chip8() {
     fun nextOpcode(): Short = ((memory[pc].toInt() and 0xff) shl 8 or (memory[pc + 1].toInt() and 0xff)).toShort()
 
     fun emulateCycle() {
-        // TODO: unit test this method
-
         // fetch opcode
         opcode = nextOpcode()
 
@@ -69,7 +67,7 @@ class Chip8() {
             if (sound_timer.toInt() == 1) {
                 beepFlag = true
             }
-            --sound_timer // TODO: test for overflows
+            --sound_timer
         }
     }
 

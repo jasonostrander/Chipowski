@@ -659,4 +659,16 @@ class Chip8Test {
         chip8.emulateCycle()
         assertEquals(0x7f.toByte(), chip8.sound_timer)
     }
+
+    @Test
+    fun testOverflow() {
+        var sound_timer:Byte = 4
+        for (i in 0..10) {
+            println("$i: $sound_timer")
+            if (sound_timer.toInt() and 0xff > 0) {
+                --sound_timer // TODO: test for overflows
+                println(">0")
+            }
+        }
+    }
 }
