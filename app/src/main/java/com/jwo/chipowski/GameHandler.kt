@@ -8,11 +8,12 @@ import android.os.Message
 /**
  * Created by j.ostrander on 1/30/17.
  */
-interface GameView {
+interface GameInterface {
     fun update(gfx: ByteArray)
+    fun beep()
 }
 
-class GameHandler(val view: GameView, debug: Boolean = false) {
+class GameHandler(val gameInterface: GameInterface, debug: Boolean = false) {
     val TIMESTEP = 1L
     val chip8 = Chip8()
     val handler:GameLoop
@@ -48,7 +49,13 @@ class GameHandler(val view: GameView, debug: Boolean = false) {
             if (chip8.drawFlag) {
                 // update graphics
                 val updatedGfx = chip8.gfx
-                uiHandler.post { view.update(updatedGfx) }
+                uiHandler.post { gameInterface.update(updatedGfx) }
+                chip8.drawFlag = false
+            }
+
+            if (chip8.beepFlag) {
+                uiHandler.post { gameInterface.beep() }
+                chip8.beepFlag = false
             }
 
             // Run every 16ms

@@ -9,6 +9,7 @@ import java.util.*
 class Chip8() {
     var debug = false
     var drawFlag = false
+    var beepFlag = false
     var opcode: Short = 0
     val memory = ByteArray(4096)
     val V = ByteArray(16)
@@ -35,6 +36,7 @@ class Chip8() {
         sp = 0
         keys.fill(false, 0, keys.size)
         drawFlag = false
+        beepFlag = false
 
         // load font set
         chip8_fontset.forEachIndexed { i, b -> memory[i] = b.toByte() }
@@ -65,7 +67,7 @@ class Chip8() {
         if (delay_timer.toInt() and 0xff > 0) --delay_timer
         if (sound_timer.toInt() and 0xff > 0) {
             if (sound_timer.toInt() == 1) {
-                // TODO: make beep sound
+                beepFlag = true
             }
             --sound_timer // TODO: test for overflows
         }

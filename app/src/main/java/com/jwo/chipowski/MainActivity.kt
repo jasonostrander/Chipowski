@@ -1,5 +1,7 @@
 package com.jwo.chipowski
 
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -13,11 +15,18 @@ import kotlinx.android.synthetic.main.activity_main.view.*
 
 class MainActivity : AppCompatActivity() {
     val keys = listOf(1, 2, 3, 0xc, 4, 5, 6, 0xd, 7, 8, 9, 0xe, 0xa, 0, 0xb, 0xf)
-    val gameHandler = GameHandler(object : GameView {
+    val tg = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100)
+
+    val gameHandler = GameHandler(object : GameInterface {
+        override fun beep() {
+            tg.startTone(ToneGenerator.TONE_PROP_BEEP)
+        }
+
         override fun update(gfx: ByteArray) {
             activity_main.chip8view.graphics = gfx
         }
     }, debug = true)
+
     val keyHeight: Int by lazy {
         activity_main.keyboard.height / 4
     }

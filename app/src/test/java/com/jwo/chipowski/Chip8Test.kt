@@ -27,6 +27,7 @@ class Chip8Test {
         assertEquals(0, chip8.I)
         assertEquals(0, chip8.sp)
         assertEquals(false, chip8.drawFlag)
+        assertEquals(false, chip8.beepFlag)
 
         chip8.gfx.forEach { assertEquals(0.toByte(), it) }
         chip8.stack.forEach { assertEquals(0.toShort(), it) }
